@@ -18,6 +18,7 @@ class Game:
                     pygame.quit()
                     sys.exit()
 
+            # 返回自上一次tick()调用以来的毫秒数,转换为秒
             dt = self.clock.tick() / 1000
             self.level.run(dt)
             pygame.display.update()
