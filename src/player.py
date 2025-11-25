@@ -15,6 +15,7 @@ class Player(pygame.sprite.Sprite):
         # 通用属性
         self.image = self.animations[self.status][self.frame_index]
         self.rect = self.image.get_rect(center=pos)
+        self.z = LAYERS['main']
 
         # 移动属性
         self.direction = pygame.math.Vector2()
@@ -98,7 +99,6 @@ class Player(pygame.sprite.Sprite):
                 self.timers['seed_use'].activate()
                 self.direction = pygame.math.Vector2()
                 self.frame_index = 0
-                print('use' + self.selected_seed)
 
             # 切换种子
             if keys[pygame.K_e] and not self.timers['seed_switch'].active:
@@ -106,7 +106,6 @@ class Player(pygame.sprite.Sprite):
                 self.seed_index += 1
                 self.seed_index = self.seed_index % len(self.seeds)
                 self.selected_seed = self.seeds[self.seed_index]
-                print('change' + self.selected_seed)
 
     def use_tool(self):
         # print(self.selected_tool)
