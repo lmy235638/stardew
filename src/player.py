@@ -5,7 +5,7 @@ from support import import_folder
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, pos, groups):
+    def __init__(self, pos, groups, collision_sprites):
         super().__init__(groups)
 
         self.import_assets()
@@ -21,6 +21,10 @@ class Player(pygame.sprite.Sprite):
         self.direction = pygame.math.Vector2()
         self.pos = pygame.math.Vector2(self.rect.center)
         self.speed = 200
+
+        # 碰撞
+        self.collision_sprites = collision_sprites
+        self.hitbox = self.rect.copy().inflate((-126, -70))
 
         # 定时器
         self.timers = {
@@ -129,6 +133,27 @@ class Player(pygame.sprite.Sprite):
         for name, timer in self.timers.items():
             timer.update()
 
+    def collision(self, direction):
+        for sprite in self.collision_sprites.sprites():  # 遍历所有碰撞对象
+            if hasattr(sprite, 'hitbox'):  # 确保对方有碰撞箱
+                if sprite.hitbox.colliderect(self.hitbox):  # 碰撞箱重叠检测
+                    if direction == 'horizontal':
+                        if self.direction.x > 0:  # 向右移动时碰撞
+                            self.hitbox.right = sprite.hitbox.left  # 玩家右边界 = 障碍物左边界（阻止穿透）
+                        if self.direction.x < 0:  # 向左移动时碰撞
+                            self.hitbox.left = sprite.hitbox.right  # 玩家左边界 = 障碍物右边界
+                        # 同步实际位置（修正后）
+                        self.rect.centerx = self.hitbox.centerx
+                        self.pos.x = self.hitbox.centerx
+
+                    if direction == 'vertical':
+                        if self.direction.y > 0:  # moving down
+                            self.hitbox.bottom = sprite.hitbox.top
+                        if self.direction.y < 0:  # moving up
+                            self.hitbox.top = sprite.hitbox.bottom
+                        self.rect.centery = self.hitbox.centery
+                        self.pos.y = self.hitbox.centery
+
     def move(self, dt):
         # 向量归一化
         if self.direction.magnitude() > 0:  # 模大于1
@@ -136,11 +161,15 @@ class Player(pygame.sprite.Sprite):
 
         # 水平移动更新
         self.pos.x += self.direction.x * self.speed * dt
-        self.rect.centerx = int(self.pos.x)
+        self.hitbox.centerx = round(self.pos.x)
+        self.rect.centerx = self.hitbox.centerx
+        self.collision('horizontal')
 
         # 垂直移动更新
         self.pos.y += self.direction.y * self.speed * dt
-        self.rect.centery = int(self.pos.y)
+        self.hitbox.centery = round(self.pos.y)
+        self.rect.centery = self.hitbox.centery
+        self.collision('vertical')
 
     def update(self, dt):
         self.input()
