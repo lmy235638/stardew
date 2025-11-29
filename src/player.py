@@ -5,7 +5,7 @@ from support import import_folder
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, pos, groups, collision_sprites):
+    def __init__(self, pos, groups, collision_sprites, tree_sprites):
         super().__init__(groups)
 
         self.import_assets()
@@ -43,6 +43,9 @@ class Player(pygame.sprite.Sprite):
         self.seeds = ['corn', 'tomato']
         self.seed_index = 0
         self.selected_seed = self.seeds[self.seed_index]
+
+        # 交互
+        self.tree_sprites = tree_sprites
 
     def import_assets(self):
         self.animations = {'up': [], 'down': [], 'left': [], 'right': [],
@@ -112,8 +115,18 @@ class Player(pygame.sprite.Sprite):
                 self.selected_seed = self.seeds[self.seed_index]
 
     def use_tool(self):
-        # print(self.selected_tool)
-        pass
+        if self.selected_tool == 'axe':
+            print('axe use')
+            for tree in self.tree_sprites.sprites():
+                if tree.rect.collidepoint(self.target_pos):
+                    tree.damage()
+        elif self.selected_tool == 'hoe':
+            pass
+        elif self.selected_tool == 'water':
+            pass
+
+    def get_tool_target_pos(self):
+        self.target_pos = self.rect.center + PLAYER_TOOL_OFFSET[self.status.split('_')[0]]
 
     def use_seed(self):
         # print(self.selected_seed)
@@ -128,6 +141,7 @@ class Player(pygame.sprite.Sprite):
         if self.timers['tool_use'].active:
             # 当前状态 + 现在所选用的工具
             self.status = self.status.split('_')[0] + '_' + self.selected_tool
+            self.get_tool_target_pos()
 
     def update_timers(self):
         for name, timer in self.timers.items():
@@ -178,3 +192,11 @@ class Player(pygame.sprite.Sprite):
 
         self.move(dt)
         self.animate(dt)
+
+    def get_sprite_type(self):
+        """返回精灵的具体类型"""
+        return "player"
+
+    def print_sprite_info(self):
+        """打印精灵类型信息"""
+        print(f"This is a {self.get_sprite_type()}")

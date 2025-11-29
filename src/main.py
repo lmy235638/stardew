@@ -20,6 +20,7 @@ class Game:
 
             # 返回自上一次tick()调用以来的毫秒数,转换为秒
             dt = self.clock.tick() / 1000
+            print(f'{"*" * 20} {dt} {"*" * 20}')
             self.level.run(dt)
             pygame.display.update()
 
